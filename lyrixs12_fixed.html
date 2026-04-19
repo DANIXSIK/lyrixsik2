@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Lyrixsik</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;500;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f0f;--surface:#181818;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --accent:#e03030;--accent2:rgba(224,48,48,0.14);--dim:rgba(255,255,255,0.3);--dim2:rgba(255,255,255,0.14);
+  --font:'Montserrat',sans-serif;--display:'Bebas Neue',sans-serif;
+}
+html,body{height:100%}
+body{background:var(--bg);color:#fff;font-family:var(--font);font-size:13px;display:flex;flex-direction:column;overflow:hidden;-webkit-tap-highlight-color:transparent}
+
+/* TOPBAR */
+.topbar{height:50px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--border);flex-shrink:0;background:#0f0f0f;gap:10px}
+.logo-wrap{display:flex;align-items:baseline;gap:7px}
+.logo{font-family:var(--display);font-size:22px;letter-spacing:5px;color:#fff;line-height:1}
+.logo-tag{font-size:8px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;font-weight:600}
+.topbar-right{margin-left:auto;display:flex;gap:7px}
+.tbtn{padding:7px 13px;font-family:var(--font);font-weight:600;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;border:none;border-radius:3px;cursor:pointer;transition:opacity .15s,transform .1s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.tbtn:active{transform:scale(.95)}
+.tbtn-ghost{background:transparent;border:1px solid var(--border2);color:var(--dim)}
+.tbtn-red{background:var(--accent);color:#fff}
+.tbtn:disabled{opacity:.22;pointer-events:none}
+
+
+
+/* LAYOUT */
+.app{display:grid;grid-template-columns:290px 1fr 230px;flex:1;overflow:hidden;min-height:0}
+
+/* PANELS */
+.left,.right{overflow-y:auto;-webkit-overflow-scrolling:touch}
+.left::-webkit-scrollbar,.right::-webkit-scrollbar{width:2px}
+.left::-webkit-scrollbar-thumb,.right::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.07)}
+.left{border-right:1px solid var(--border);padding:20px 16px 80px;display:flex;flex-direction:column;gap:20px;background:var(--bg)}
+.center{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a0a0a;padding:24px 20px;gap:16px;position:relative;overflow:hidden}
+.center-label{position:absolute;top:14px;left:16px;font-size:8px;letter-spacing:3px;color:rgba(255,255,255,0.14);text-transform:uppercase}
+.right{border-left:1px solid var(--border);padding:16px 12px 80px;display:flex;flex-direction:column;background:var(--bg)}
+
+/* LABEL */
+.slabel{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-bottom:8px;display:block}
+
+/* UPLOAD */
+.upload-zone{border:1px dashed rgba(255,255,255,0.12);border-radius:4px;padding:18px 12px;text-align:center;cursor:pointer;position:relative;transition:border-color .2s,background .2s;background:rgba(255,255,255,0.015)}
+.upload-zone:hover{border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.03)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:22px;opacity:.22;margin-bottom:6px}
+.upload-zone p{font-size:9px;color:var(--dim);letter-spacing:1.5px}
+.upload-name{font-size:9px;color:rgba(255,255,255,0.6);margin-top:5px}
+#waveformCanvas{width:100%;height:40px;display:block;background:rgba(255,255,255,0.02);border-radius:2px;margin-top:8px;cursor:pointer}
+
+/* TEXTAREA */
+textarea.lyrics{width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);border-radius:4px;color:#fff;font-family:var(--font);font-weight:300;font-size:13px;line-height:2;padding:10px 12px;resize:none;outline:none;height:120px;transition:border-color .2s;-webkit-appearance:none}
+textarea.lyrics:focus{border-color:rgba(255,255,255,0.22)}
+textarea.lyrics::placeholder{color:rgba(255,255,255,0.1)}
+
+/* BTNS */
+.btn-row{display:flex;gap:8px;margin-top:8px}
+.sbtn{padding:9px 14px;font-family:var(--font);font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;border-radius:3px;cursor:pointer;transition:all .15s;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.55);-webkit-appearance:none}
+.sbtn:active{opacity:.65}
+.sbtn.main{flex:1;color:rgba(255,255,255,0.85);border-color:rgba(255,255,255,0.18)}
+
+/* PLAY */
+.play-section{display:flex;flex-direction:column;gap:9px}
+.timing-label{display:flex;align-items:center;gap:8px;font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim2)}
+.timing-label .pill{background:var(--accent2);border:1px solid rgba(224,48,48,0.35);color:rgba(224,48,48,0.9);padding:2px 8px;border-radius:2px;font-size:8px;letter-spacing:2px}
+.play-row{display:flex;align-items:center;gap:10px}
+.play-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.13);color:rgba(255,255,255,0.8);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;-webkit-appearance:none}
+.play-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.progress-wrap{flex:1;height:3px;background:rgba(255,255,255,0.09);border-radius:2px;cursor:pointer}
+.progress-fill{height:100%;width:0%;background:rgba(255,255,255,0.4);border-radius:2px;pointer-events:none;transition:width .1s}
+.time-txt{font-size:9px;color:var(--dim);letter-spacing:1px;white-space:nowrap}
+.next-txt{font-size:9px;color:var(--dim2);letter-spacing:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* STYLE CONTROLS */
+.style-section{display:flex;flex-direction:column;gap:12px}
+.ctrl-row{display:flex;gap:10px}
+.ctrl{display:flex;flex-direction:column;gap:6px;flex:1}
+.color-block{height:30px;border-radius:3px;border:1px solid rgba(255,255,255,0.1);position:relative;cursor:pointer;overflow:hidden}
+.color-block input[type=color]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.color-bg{width:100%;height:100%;transition:background .1s}
+input[type=range]{-webkit-appearance:none;width:100%;height:2px;background:rgba(255,255,255,0.15);outline:none;border-radius:1px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 0 0 3px rgba(255,255,255,0.08)}
+select{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.75);font-family:var(--font);font-size:11px;padding:7px 26px 7px 9px;border-radius:3px;outline:none;cursor:pointer;width:100%;-webkit-appearance:none;background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘10’ height=‘6’%3E%3Cpath d=‘M0 0l5 6 5-6z’ fill=‘rgba(255,255,255,0.3)’/%3E%3C/svg%3E”);background-repeat:no-repeat;background-position:right 9px center}
+select option{background:#1c1c1c}
+.range-row{display:flex;align-items:center;gap:8px}
+.range-val{font-size:10px;color:var(--accent);letter-spacing:1px;flex-shrink:0;min-width:24px;text-align:right}
+.outline-row{display:flex;align-items:center;gap:8px}
+input[type=checkbox]{accent-color:var(--accent);cursor:pointer;width:14px;height:14px;flex-shrink:0}
+.font-upload{border:1px dashed rgba(255,255,255,0.1);border-radius:3px;padding:10px;text-align:center;cursor:pointer;position:relative;transition:border-color .2s}
+.font-upload:hover{border-color:rgba(255,255,255,0.25)}
+.font-upload input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.font-upload p{font-size:9px;color:var(--dim2);letter-spacing:1px}
+
+/* CANVAS */
+.canvas-wrap{width:min(100%,420px);aspect-ratio:1;border-radius:3px;overflow:hidden;flex-shrink:0}
+#previewCanvas{width:100%;height:100%;display:block}
+.space-hint{display:flex;align-items:center;gap:10px;font-size:8px;letter-spacing:2.5px;color:rgba(255,255,255,0.16);text-transform:uppercase}
+.space-key{padding:4px 14px;border:1px solid rgba(255,255,255,0.1);border-radius:3px;font-size:9px;color:rgba(255,255,255,0.22);letter-spacing:2px;transition:all .1s}
+.space-key.flash{border-color:rgba(255,255,255,0.45);color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.04)}
+.tap-btn{display:none;width:100%;padding:16px;background:rgba(224,48,48,0.1);border:1px solid rgba(224,48,48,0.35);border-radius:4px;color:rgba(224,48,48,0.9);font-family:var(--font);font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .15s;-webkit-appearance:none;text-align:center}
+.tap-btn:active{background:rgba(224,48,48,0.22);transform:scale(.98)}
+
+/* LINES */
+.right-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-shrink:0}
+.space-tag{font-size:8px;letter-spacing:2px;color:rgba(224,48,48,0.55);text-transform:uppercase}
+.line-item{display:flex;align-items:center;gap:6px;padding:8px;border:1px solid transparent;border-radius:3px;cursor:pointer;transition:all .12s;margin-bottom:2px}
+.line-item:hover{background:rgba(255,255,255,0.025);border-color:rgba(255,255,255,0.06)}
+.line-item.active{border-color:rgba(255,255,255,0.18);background:rgba(255,255,255,0.035)}
+.line-item.done{border-color:rgba(224,48,48,0.14)}
+.line-item.done .lnum{color:var(--accent)}
+.lnum{font-size:8px;color:rgba(255,255,255,0.12);width:14px;flex-shrink:0;text-align:right}
+.ltext{font-size:11px;color:rgba(255,255,255,0.5);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.line-item.active .ltext{color:#fff}
+.ltime{font-size:8px;color:rgba(224,48,48,0.5);flex-shrink:0}
+
+/* BOTTOM */
+.bottom{height:36px;border-top:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0;background:#0f0f0f}
+.status-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.1);transition:background .3s;flex-shrink:0}
+.status-dot.on{background:var(--accent)}
+.status-msg{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.17)}
+.exp-bar{flex:1;height:1px;background:rgba(255,255,255,0.05)}
+.exp-fill{height:100%;width:0%;background:var(--accent);transition:width .05s}
+.bottom-logo{font-family:var(--display);font-size:12px;letter-spacing:4px;color:rgba(255,255,255,0.1);flex-shrink:0}
+
+/* MOBILE TABS — bottom nav */
+.tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#111;border-top:1px solid rgba(255,255,255,0.08);padding-bottom:env(safe-area-inset-bottom)}
+.tab-bar-inner{display:flex}
+.tab-btn{flex:1;padding:10px 0 8px;font-family:'Montserrat',sans-serif;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);background:transparent;border:none;border-top:2px solid transparent;cursor:pointer;font-weight:600;transition:color .15s;display:flex;flex-direction:column;align-items:center;gap:3px}
+.tab-btn .tab-icon{font-size:17px;line-height:1}
+.tab-btn.active{color:#fff;border-top-color:#e03030}
+
+/* MOBILE */
+@media(max-width:768px){
+.tab-bar{display:block}
+.app{display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0}
+.left,.center,.right{display:none;flex:1;min-height:0}
+.left.tab-active{display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.center.tab-active{display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.right.tab-active{display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.left{border-right:none;padding:16px 14px 90px;gap:18px}
+.center{align-items:center;justify-content:flex-start;padding:14px 14px 90px;background:#0a0a0a;gap:14px}
+.center-label{display:none}
+.right{border-left:none;padding:14px 12px 90px}
+.canvas-wrap{width:100%;max-width:100%;border-radius:4px}
+.space-hint{display:none}
+.tap-btn{display:flex;align-items:center;justify-content:center;gap:10px}
+.topbar{height:48px}
+.logo{font-size:19px}
+.bottom{height:auto;padding:8px 14px;margin-bottom:62px}
+.bottom-logo{display:none}
+.upload-zone{padding:26px 16px}
+.upload-icon{font-size:28px}
+.upload-zone p{font-size:11px;letter-spacing:1px}
+.sbtn{padding:13px 14px;font-size:10px}
+.play-btn{width:44px;height:44px;font-size:14px}
+}
+@media(max-width:380px){
+.logo-tag{display:none}
+.tbtn{padding:6px 9px;letter-spacing:1px;font-size:8px}
+}
+</style>
+
+</head>
+<body>
+<div class="topbar">
+  <div class="logo-wrap">
+    <div class="logo">Lyrixsik</div>
+    <span class="logo-tag">by danixsik</span>
+  </div>
+  <div class="topbar-right">
+    <button class="tbtn tbtn-ghost" id="previewBtn">&#9654; Превью</button>
+    <button class="tbtn tbtn-red" id="exportBtn" disabled>&#8595; Экспорт</button>
+  </div>
+</div>
+<div class="tab-bar" id="tabBar">
+  <div class="tab-bar-inner">
+    <button class="tab-btn active" data-tab="left"><span class="tab-icon">⚙</span>Настройки</button>
+    <button class="tab-btn" data-tab="center"><span class="tab-icon">▶</span>Превью</button>
+    <button class="tab-btn" data-tab="right"><span class="tab-icon">≡</span>Строки</button>
+  </div>
+</div>
+<div class="app">
+  <div class="left tab-active" id="panelLeft">
+    <div>
+      <span class="slabel">Аудио</span>
+      <div class="upload-zone">
+        <input type="file" id="audioInput" accept="audio/*">
+        <div class="upload-icon">&#9834;</div>
+        <p>MP3 или WAV</p>
+        <div class="upload-name" id="audioName"></div>
+      </div>
+      <canvas id="waveformCanvas"></canvas>
+    </div>
+    <div>
+      <span class="slabel">Текст — каждая строка отдельно</span>
+      <textarea class="lyrics" id="lyricsInput" placeholder="привет как дела&#10;что делаешь?&#10;нормально ты как&#10;и ты че как итак.."></textarea>
+      <div class="btn-row">
+        <button class="sbtn main" id="loadBtn">Загрузить строки</button>
+        <button class="sbtn" id="clearBtn">Очистить</button>
+      </div>
+    </div>
+    <div class="play-section">
+      <div class="timing-label">Тайминг строк — <span class="pill">Пробел / Тап</span></div>
+      <div class="play-row">
+        <button class="play-btn" id="playBtn">&#9654;</button>
+        <div class="progress-wrap" id="progressWrap"><div class="progress-fill" id="progressFill"></div></div>
+        <span class="time-txt" id="timeTxt">0:00 / 0:00</span>
+      </div>
+      <div class="next-txt" id="nextTxt">Следующая: —</div>
+    </div>
+    <div class="style-section">
+      <span class="slabel">Вид текста</span>
+      <div class="ctrl-row">
+        <div class="ctrl">
+          <span class="slabel">Цвет текста</span>
+          <div class="color-block"><div class="color-bg" id="textColorBg" style="background:#ffffff"></div><input type="color" id="textColor" value="#ffffff"></div>
+        </div>
+        <div class="ctrl">
+          <span class="slabel">Фон (хромакей)</span>
+          <div class="color-block"><div class="color-bg" id="bgColorBg" style="background:#00b140"></div><input type="color" id="bgColor" value="#00b140"></div>
+        </div>
+      </div>
+      <div class="ctrl">
+        <div class="range-row"><span class="slabel" style="margin:0">Размер</span><span class="range-val" id="fontSizeVal">20</span></div>
+        <input type="range" id="fontSize" min="1" max="200" value="20">
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl">
+          <span class="slabel">Анимация</span>
+          <select id="animation"><option value="fade">Fade</option><option value="slide">Slide Up</option><option value="pop">Pop</option><option value="none">None</option></select>
+        </div>
+        <div class="ctrl">
+          <span class="slabel">Шрифт</span>
+          <select id="fontFamily"><option value="'Bebas Neue', sans-serif">Bebas Neue</option><option value="'Montserrat', sans-serif">Montserrat</option><option value="Georgia, serif">Georgia</option><option value="Impact, sans-serif">Impact</option></select>
+        </div>
+      </div>
+      <div class="ctrl">
+        <span class="slabel">Обводка</span>
+        <div class="outline-row">
+          <input type="checkbox" id="outlineOn">
+          <div class="color-block" style="width:36px;height:26px;flex-shrink:0"><div class="color-bg" id="outColorBg" style="background:#000000"></div><input type="color" id="outlineColor" value="#000000"></div>
+          <input type="range" id="outlineW" min="0" max="20" value="4" style="flex:1">
+          <span class="range-val" id="outlineWVal">4</span>
+        </div>
+      </div>
+      <div class="ctrl">
+        <span class="slabel">Свой шрифт (TTF / OTF)</span>
+        <div class="font-upload"><input type="file" id="fontInput" accept=".ttf,.otf,.woff,.woff2"><p>Нажми чтобы выбрать файл</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="center" id="panelCenter">
+    <div class="center-label">Предпросмотр 1:1</div>
+    <div class="canvas-wrap"><canvas id="previewCanvas" width="1080" height="1080"></canvas></div>
+    <div class="space-hint"><div class="space-key" id="spaceKey">Пробел</div><span>= следующая строка</span></div>
+    <button class="tap-btn" id="tapBtn"><span style="font-size:18px">▶</span> Старт / Следующая строка</button>
+  </div>
+  <div class="right" id="panelRight">
+    <div class="right-header">
+      <span class="slabel" style="margin:0">Строки</span>
+      <span class="space-tag">Пробел = тайминг</span>
+    </div>
+    <div id="linesList"></div>
+  </div>
+</div>
+<div class="bottom">
+  <div class="status-dot" id="statusDot"></div>
+  <div class="status-msg" id="statusMsg">Ожидание</div>
+  <div class="exp-bar"><div class="exp-fill" id="expFill"></div></div>
+  <div class="bottom-logo">danixsik</div>
+</div>
+<audio id="player" style="display:none" tabindex="-1"></audio>
+<script>
+const S={audioFile:null,audioDur:0,lines:[],curLine:-1,playing:false,timingMode:false,animRaf:null,waveData:null,textColor:'#ffffff',bgColor:'#00b140',fontSize:20,fontFamily:"'Bebas Neue', sans-serif",anim:'fade',outlineOn:false,outlineColor:'#000000',outlineW:4};
+const player=document.getElementById('player');
+const canvas=document.getElementById('previewCanvas');
+const ctx=canvas.getContext('2d');
+const wc=document.getElementById('waveformCanvas');
+const wctx=wc.getContext('2d');
+
+function drawFrame(text,prog){
+if(prog===undefined)prog=1;
+const W=1080,H=1080;
+ctx.clearRect(0,0,W,H);ctx.fillStyle=S.bgColor;ctx.fillRect(0,0,W,H);
+const wmColor=(S.bgColor.toLowerCase()===’#ffffff’||S.bgColor.toLowerCase()===’#fff’)?‘rgba(0,0,0,0.18)’:‘rgba(255,255,255,0.18)’;
+ctx.save();ctx.font=“500 26px ‘Montserrat’,sans-serif”;ctx.fillStyle=wmColor;ctx.textBaseline=‘middle’;
+ctx.textAlign=‘left’;ctx.fillText(‘lyrixsik’,44,H-44);
+ctx.textAlign=‘right’;ctx.fillText(‘danixsik’,W-44,H-44);ctx.restore();
+if(!text)return;
+const ease=S.anim===‘none’?1:1-Math.pow(1-Math.min(Math.max(prog,0),1),3);
+let alpha=1,dy=0;
+if(S.anim===‘fade’)alpha=ease;
+else if(S.anim===‘slide’){alpha=ease;dy=(1-ease)*70;}
+else if(S.anim===‘pop’)alpha=ease;
+ctx.save();
+if(S.anim===‘pop’){const sc=0.5+ease*0.5;ctx.translate(W/2,H/2);ctx.scale(sc,sc);ctx.translate(-W/2,-H/2);}
+ctx.globalAlpha=alpha;
+const sz=S.fontSize*5;
+ctx.font=sz+‘px ‘+S.fontFamily;ctx.textAlign=‘center’;ctx.textBaseline=‘middle’;
+const maxW=W-120,words=text.split(’ ‘),wrapped=[];let cur=’’;
+for(const w of words){const t=cur?cur+’ ’+w:w;if(ctx.measureText(t).width>maxW&&cur){wrapped.push(cur);cur=w;}else cur=t;}
+if(cur)wrapped.push(cur);
+const lh=sz*1.25,totalH=wrapped.length*lh;let sy=H/2-totalH/2+lh/2+dy;
+wrapped.forEach((line,i)=>{
+const y=sy+i*lh;
+if(S.outlineOn&&S.outlineW>0){ctx.strokeStyle=S.outlineColor;ctx.lineWidth=S.outlineW*3;ctx.lineJoin=‘round’;ctx.strokeText(line,W/2,y);}
+ctx.fillStyle=S.textColor;ctx.fillText(line,W/2,y);
+});
+ctx.restore();
+}
+
+function animTo(text){
+if(S.animRaf)cancelAnimationFrame(S.animRaf);
+if(S.anim===‘none’){drawFrame(text,1);return;}
+const start=performance.now(),dur=220;
+function tick(now){drawFrame(text,(now-start)/dur);if((now-start)<dur)S.animRaf=requestAnimationFrame(tick);}
+S.animRaf=requestAnimationFrame(tick);
+}
+
+function drawWave(buf){
+const data=buf.getChannelData(0);
+const dpr=window.devicePixelRatio||1;
+const dispW=wc.offsetWidth||260,dispH=40;
+wc.width=Math.round(dispW*dpr);wc.height=Math.round(dispH*dpr);
+wc.style.width=dispW+‘px’;wc.style.height=dispH+‘px’;
+wctx.setTransform(dpr,0,0,dpr,0,0);
+wctx.clearRect(0,0,dispW,dispH);
+const step=Math.max(1,Math.floor(data.length/dispW));
+for(let x=0;x<dispW;x++){
+let max=0;
+for(let j=0;j<step;j++){const v=Math.abs(data[x*step+j]||0);if(v>max)max=v;}
+const h=Math.max(1,max*dispH);
+wctx.fillStyle=‘rgba(255,255,255,0.25)’;
+wctx.fillRect(x,dispH/2-h/2,1,h);
+}
+S.waveData=wctx.getImageData(0,0,wc.width,wc.height);
+}
+
+function updateWavePos(){
+if(!S.audioDur||!S.waveData)return;
+const dpr=window.devicePixelRatio||1;
+wctx.putImageData(S.waveData,0,0);
+const dispW=wc.offsetWidth||260;
+const x=Math.floor((player.currentTime/S.audioDur)*dispW*dpr);
+wctx.fillStyle=‘rgba(224,48,48,0.8)’;
+wctx.fillRect(x,0,Math.max(2,2*dpr),wc.height);
+}
+
+function loadLines(){
+const raw=document.getElementById(‘lyricsInput’).value;
+const lines=raw.split(’\n’).map(l=>l.trim()).filter(Boolean);
+S.lines=lines.map(t=>({text:t,time:null}));S.curLine=-1;renderLines();drawFrame(null);
+setStatus(’Строк: ’+lines.length,false);
+document.getElementById(‘exportBtn’).disabled=!S.audioFile;
+}
+
+function renderLines(){
+const list=document.getElementById(‘linesList’);list.innerHTML=’’;
+S.lines.forEach((ln,i)=>{
+const el=document.createElement(‘div’);
+el.className=‘line-item’+(i===S.curLine?’ active’:’’)+(ln.time!==null?’ done’:’’);
+el.innerHTML=’<span class="lnum">’+(i+1)+’</span><span class="ltext">’+ln.text+’</span><span class="ltime">’+(ln.time!==null?fmt(ln.time):’’)+’</span>’;
+el.addEventListener(‘click’,()=>{S.curLine=i;animTo(ln.text);renderLines();updateNext();});
+list.appendChild(el);
+});
+}
+
+function updateNext(){
+const n=S.lines[S.curLine+1];
+document.getElementById(‘nextTxt’).textContent=‘Следующая: ‘+(n?n.text:’—’);
+const tb=document.getElementById(‘tapBtn’);
+tb.textContent=S.playing?(n?’-> ’+n.text:‘■ Завершить’):‘▶ Старт / Следующая строка’;
+}
+
+function scrollActive(){const a=document.querySelector(’.line-item.active’);if(a)a.scrollIntoView({behavior:‘smooth’,block:‘nearest’});}
+
+player.addEventListener(‘timeupdate’,()=>{
+const c=player.currentTime,d=player.duration||0;
+document.getElementById(‘timeTxt’).textContent=fmt(c)+’ / ‘+fmt(d);
+document.getElementById(‘progressFill’).style.width=d?(c/d*100)+’%’:‘0%’;
+updateWavePos();
+if(!S.timingMode&&S.lines.some(l=>l.time!==null)){
+let active=-1;
+S.lines.forEach((l,i)=>{if(l.time!==null&&l.time<=c)active=i;});
+if(active!==S.curLine&&active>=0){S.curLine=active;animTo(S.lines[active].text);renderLines();updateNext();scrollActive();}
+}
+});
+player.addEventListener(‘ended’,()=>{
+S.playing=false;S.timingMode=false;
+document.getElementById(‘playBtn’).textContent=‘▶’;document.getElementById(‘playBtn’).classList.remove(‘active’);
+document.getElementById(‘statusDot’).classList.remove(‘on’);document.getElementById(‘tapBtn’).textContent=‘▶ Старт / Следующая строка’;
+setStatus(‘Готово’,false);
+});
+
+function triggerNextLine(){
+const key=document.getElementById(‘spaceKey’);key.classList.add(‘flash’);setTimeout(()=>key.classList.remove(‘flash’),120);
+if(!S.playing){
+if(!S.audioFile){setStatus(‘Сначала загрузи аудио’,false);return;}
+if(!S.lines.length){setStatus(‘Сначала загрузи строки’,false);return;}
+S.lines.forEach(l=>l.time=null);S.curLine=-1;S.timingMode=true;S.playing=true;
+player.currentTime=0;player.play();
+document.getElementById(‘playBtn’).textContent=‘■’;document.getElementById(‘playBtn’).classList.add(‘active’);
+document.getElementById(‘statusDot’).classList.add(‘on’);setStatus(‘Запись тайминга…’,true);
+renderLines();updateNext();
+}else{
+S.curLine++;
+if(S.curLine<S.lines.length){
+S.lines[S.curLine].time=player.currentTime;animTo(S.lines[S.curLine].text);renderLines();updateNext();scrollActive();
+}else{
+stopAudio();setStatus(‘Тайминг записан ✓’,false);
+document.getElementById(‘exportBtn’).disabled=false;document.getElementById(‘tapBtn’).textContent=‘▶ Старт / Следующая строка’;
+}
+}
+}
+
+document.addEventListener(‘keyup’,e=>{if(e.code===‘Space’)e.preventDefault();});
+document.addEventListener(‘keypress’,e=>{if(e.code===‘Space’)e.preventDefault();});
+document.addEventListener(‘keydown’,e=>{
+if(e.code!==‘Space’)return;if(e.target.tagName===‘TEXTAREA’||e.target.tagName===‘INPUT’)return;
+e.preventDefault();e.stopImmediatePropagation();player.blur();triggerNextLine();
+});
+document.getElementById(‘tapBtn’).addEventListener(‘click’,e=>{e.preventDefault();triggerNextLine();});
+
+function stopAudio(){
+player.pause();player.currentTime=0;S.playing=false;S.timingMode=false;
+document.getElementById(‘playBtn’).textContent=‘▶’;document.getElementById(‘playBtn’).classList.remove(‘active’);
+document.getElementById(‘statusDot’).classList.remove(‘on’);
+}
+
+async function doExport(){
+if(!S.audioFile||!S.lines.length)return;
+document.getElementById(‘exportBtn’).disabled=true;setStatus(‘Экспорт…’,true);
+const W=1080,H=1080,FPS=30;
+const ec=document.createElement(‘canvas’);ec.width=W;ec.height=H;
+const ectx=ec.getContext(‘2d’);
+const totalMs=(S.audioDur||30)*1000+500;const stream=ec.captureStream(FPS);
+try{
+const audioCtx=new AudioContext();const dec=await audioCtx.decodeAudioData(await S.audioFile.arrayBuffer());
+const src=audioCtx.createBufferSource();src.buffer=dec;const dest=audioCtx.createMediaStreamDestination();
+src.connect(dest);audioCtx.resume().then(()=>src.start(0));dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+}catch(e){}
+const mime=MediaRecorder.isTypeSupported(‘video/webm;codecs=vp9’)?‘video/webm;codecs=vp9’:‘video/webm’;
+const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:8000000});
+const chunks=[];rec.ondataavailable=e=>chunks.push(e.data);
+rec.onstop=()=>{
+const blob=new Blob(chunks,{type:‘video/webm’});const a=document.createElement(‘a’);
+a.href=URL.createObjectURL(blob);a.download=‘lyrixsik_’+Date.now()+’.webm’;a.click();
+setStatus(‘Сохранено ✓’,false);document.getElementById(‘exportBtn’).disabled=false;document.getElementById(‘expFill’).style.width=‘0%’;
+};
+rec.start();
+function getLineText(ms){let r=null;S.lines.forEach(l=>{if(l.time!==null&&l.time*1000<=ms)r=l.text;});return r;}
+function drawEx(text,p){
+const ease=S.anim===‘none’?1:1-Math.pow(1-Math.min(p,1),3);
+ectx.clearRect(0,0,W,H);ectx.fillStyle=S.bgColor;ectx.fillRect(0,0,W,H);
+const wmColor=S.bgColor.toLowerCase()===’#ffffff’?‘rgba(0,0,0,0.18)’:‘rgba(255,255,255,0.18)’;
+ectx.save();ectx.font=“500 26px ‘Montserrat’,sans-serif”;ectx.fillStyle=wmColor;ectx.textBaseline=‘middle’;
+ectx.textAlign=‘left’;ectx.fillText(‘lyrixsik’,44,H-44);ectx.textAlign=‘right’;ectx.fillText(‘danixsik’,W-44,H-44);ectx.restore();
+if(!text)return;
+ectx.save();if(S.anim===‘pop’){const sc=0.5+ease*0.5;ectx.translate(W/2,H/2);ectx.scale(sc,sc);ectx.translate(-W/2,-H/2);}
+let alpha=1,dy=0;if(S.anim===‘fade’)alpha=ease;else if(S.anim===‘slide’){alpha=ease;dy=(1-ease)*70;}else if(S.anim===‘pop’)alpha=ease;
+ectx.globalAlpha=alpha;const sz=S.fontSize*5;ectx.font=sz+‘px ‘+S.fontFamily;ectx.textAlign=‘center’;ectx.textBaseline=‘middle’;
+const words=text.split(’ ‘),wrapped=[],maxW=W-120;let cur=’’;
+for(const w of words){const t=cur?cur+’ ’+w:w;if(ectx.measureText(t).width>maxW&&cur){wrapped.push(cur);cur=w;}else cur=t;}
+if(cur)wrapped.push(cur);
+const lh=sz*1.25,totalH=wrapped.length*lh;let sy=H/2-totalH/2+lh/2+dy;
+wrapped.forEach((line,i)=>{
+const y=sy+i*lh;
+if(S.outlineOn&&S.outlineW>0){ectx.strokeStyle=S.outlineColor;ectx.lineWidth=S.outlineW*3;ectx.lineJoin=‘round’;ectx.strokeText(line,W/2,y);}
+ectx.fillStyle=S.textColor;ectx.fillText(line,W/2,y);
+});ectx.restore();
+}
+const frameMs=1000/FPS;let elapsed=0,lastText=null,lineStart=0;
+function nextFrame(){
+if(elapsed>=totalMs){drawEx(null,1);rec.stop();return;}
+const text=getLineText(elapsed);if(text!==lastText){lastText=text;lineStart=elapsed;}
+drawEx(text,S.anim===‘none’?1:Math.min((elapsed-lineStart)/220,1));
+elapsed+=frameMs;const pct=(elapsed/totalMs)*100;
+document.getElementById(‘expFill’).style.width=pct+’%’;setStatus(‘Экспорт: ‘+Math.round(pct)+’%’,true);
+setTimeout(nextFrame,frameMs);
+}nextFrame();
+}
+
+function fmt(s){if(!s||isNaN(s))return’0:00’;const m=Math.floor(s/60),sec=Math.floor(s%60);return m+’:’+(sec<10?‘0’:’’)+sec;}
+function setStatus(msg,active){document.getElementById(‘statusMsg’).textContent=msg;document.getElementById(‘statusDot’).classList.toggle(‘on’,!!active);}
+function redraw(){const ln=S.lines[S.curLine];drawFrame(ln?ln.text:null,1);}
+
+document.querySelectorAll(’.tab-btn’).forEach(btn=>{
+btn.addEventListener(‘click’,()=>{
+document.querySelectorAll(’.tab-btn’).forEach(b=>b.classList.remove(‘active’));btn.classList.add(‘active’);
+const t=btn.dataset.tab;[‘panelLeft’,‘panelCenter’,‘panelRight’].forEach(id=>document.getElementById(id).classList.remove(‘tab-active’));
+const map={left:‘panelLeft’,center:‘panelCenter’,right:‘panelRight’};document.getElementById(map[t]).classList.add(‘tab-active’);
+});
+});
+
+document.getElementById(‘audioInput’).addEventListener(‘change’,async e=>{
+const file=e.target.files[0];if(!file)return;S.audioFile=file;player.src=URL.createObjectURL(file);
+document.getElementById(‘audioName’).textContent=file.name;
+try{const dec=await new AudioContext().decodeAudioData(await file.arrayBuffer());S.audioDur=dec.duration;requestAnimationFrame(()=>drawWave(dec));}catch(e){}
+setStatus(‘Аудио загружено’,false);if(S.lines.length)document.getElementById(‘exportBtn’).disabled=false;
+});
+document.getElementById(‘loadBtn’).addEventListener(‘click’,loadLines);
+document.getElementById(‘clearBtn’).addEventListener(‘click’,()=>{S.lines=[];S.curLine=-1;document.getElementById(‘linesList’).innerHTML=’’;drawFrame(null);setStatus(‘Очищено’,false);document.getElementById(‘exportBtn’).disabled=true;});
+document.getElementById(‘playBtn’).addEventListener(‘click’,()=>{
+if(!S.audioFile){setStatus(‘Загрузи аудио’,false);return;}
+if(S.playing){stopAudio();setStatus(‘Пауза’,false);}
+else{player.play();S.playing=true;document.getElementById(‘playBtn’).textContent=‘■’;document.getElementById(‘playBtn’).classList.add(‘active’);document.getElementById(‘statusDot’).classList.add(‘on’);setStatus(‘Воспроизведение’,true);}
+});
+document.getElementById(‘progressWrap’).addEventListener(‘click’,e=>{if(!S.audioDur)return;const r=e.currentTarget.getBoundingClientRect();player.currentTime=((e.clientX-r.left)/r.width)*S.audioDur;});
+wc.addEventListener(‘click’,e=>{if(!S.audioDur)return;const r=wc.getBoundingClientRect();player.currentTime=((e.clientX-r.left)/r.width)*S.audioDur;});
+document.getElementById(‘textColor’).addEventListener(‘input’,e=>{S.textColor=e.target.value;document.getElementById(‘textColorBg’).style.background=e.target.value;redraw();});
+document.getElementById(‘bgColor’).addEventListener(‘input’,e=>{S.bgColor=e.target.value;document.getElementById(‘bgColorBg’).style.background=e.target.value;redraw();});
+document.getElementById(‘fontSize’).addEventListener(‘input’,e=>{S.fontSize=parseInt(e.target.value);document.getElementById(‘fontSizeVal’).textContent=S.fontSize;redraw();});
+document.getElementById(‘animation’).addEventListener(‘change’,e=>{S.anim=e.target.value;});
+document.getElementById(‘fontFamily’).addEventListener(‘change’,e=>{S.fontFamily=e.target.value;redraw();});
+document.getElementById(‘outlineOn’).addEventListener(‘change’,e=>{S.outlineOn=e.target.checked;redraw();});
+document.getElementById(‘outlineColor’).addEventListener(‘input’,e=>{S.outlineColor=e.target.value;document.getElementById(‘outColorBg’).style.background=e.target.value;redraw();});
+document.getElementById(‘outlineW’).addEventListener(‘input’,e=>{S.outlineW=parseInt(e.target.value);document.getElementById(‘outlineWVal’).textContent=S.outlineW;redraw();});
+document.getElementById(‘fontInput’).addEventListener(‘change’,async e=>{
+const file=e.target.files[0];if(!file)return;
+const name=‘Custom_’+Date.now();const font=new FontFace(name,‘url(’+URL.createObjectURL(file)+’)’);
+await font.load();document.fonts.add(font);S.fontFamily=”’”+name+”’, sans-serif”;
+const sel=document.getElementById(‘fontFamily’);const opt=document.createElement(‘option’);
+opt.value=S.fontFamily;opt.textContent=file.name.replace(/.[^.]+$/,’’);opt.selected=true;sel.appendChild(opt);redraw();
+});
+document.getElementById(‘previewBtn’).addEventListener(‘click’,()=>{
+if(!S.audioFile){setStatus(‘Загрузи аудио’,false);return;}
+if(!S.lines.some(l=>l.time!==null)){setStatus(‘Сначала задай тайминг’,false);return;}
+stopAudio();S.curLine=-1;S.timingMode=false;player.currentTime=0;player.play();S.playing=true;
+drawFrame(null);document.getElementById(‘playBtn’).textContent=‘■’;document.getElementById(‘playBtn’).classList.add(‘active’);
+document.getElementById(‘statusDot’).classList.add(‘on’);setStatus(‘Предпросмотр…’,true);
+if(window.innerWidth<=768){
+document.querySelectorAll(’.tab-btn’).forEach(b=>b.classList.remove(‘active’));
+document.querySelector(’[data-tab=“center”]’).classList.add(‘active’);
+[‘panelLeft’,‘panelCenter’,‘panelRight’].forEach(id=>document.getElementById(id).classList.remove(‘tab-active’));
+document.getElementById(‘panelCenter’).classList.add(‘tab-active’);
+}
+});
+document.getElementById(‘exportBtn’).addEventListener(‘click’,doExport);
+drawFrame(null);
+</script>
+
+</body>
+</html>
